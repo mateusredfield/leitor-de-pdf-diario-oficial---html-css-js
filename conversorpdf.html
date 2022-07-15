@@ -1,92 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Page Title</title>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<script
-  src="https://code.jquery.com/jquery-3.6.0.js"
-  integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
-  crossorigin="anonymous">
-</script>
-<script src="js/build/pdf.js">
-</script>
-
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>'Hello, world!' example</title>
+    <meta charset="UTF-8">
+    <title>Leitor de pdf</title>
+    <script src="js/build/pdf.js"></script>
+    <script src="script.js"></script>
 </head>
 <body>
-
-<h1>'Hello, world!' example</h1>
-
-<canvas id="the-canvas" style="border: 1px solid black; direction: ltr;"></canvas>
-
-<script src="js/build/pdf.js"></script>
-
-<script id="script">
-  //
-  // If absolute URL from the remote server is provided, configure the CORS
-  // header on that server.
-  //
-  const url = 'teste.pdf';
-
-  //
-  // The workerSrc property shall be specified.
-  //
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    'js/build/pdf.worker.js';
-
-  //
-  // Asynchronous download PDF
-  //
-  const loadingTask = pdfjsLib.getDocument(url);
-  (async () => {
-    const pdf = await loadingTask.promise;
-    //
-    // Fetch the first page
-    //
-    const page = await pdf.getPage(1);
-    const scale = 1.5;
-    const viewport = page.getViewport({ scale });
-    // Support HiDPI-screens.
-    const outputScale = window.devicePixelRatio || 1;
-
-    //
-    // Prepare canvas using PDF page dimensions
-    //
-    const canvas = document.getElementById("the-canvas");
-    const context = canvas.getContext("2d");
-
-    canvas.width = Math.floor(viewport.width * outputScale);
-    canvas.height = Math.floor(viewport.height * outputScale);
-    canvas.style.width = Math.floor(viewport.width) + "px";
-    canvas.style.height = Math.floor(viewport.height) + "px";
-
-    const transform = outputScale !== 1 
-      ? [outputScale, 0, 0, outputScale, 0, 0] 
-      : null;
-
-    //
-    // Render PDF page into canvas context
-    //
-    const renderContext = {
-      canvasContext: context,
-      transform,
-      viewport,
-    };
-    page.render(renderContext);
-  })();
-</script>
-
-<hr>
-<h2>JavaScript code:</h2>
-<pre id="code"></pre>
-<!-- <script>
-  document.getElementById('code').textContent =
-      document.getElementById('script').text;
-</script> -->
+  <p>Teste de leitor de pdf quando clica</p>
+  <input id="nomePDF" name="nomePDF" type="text">
+  <input type="submit" onclick="pageLoaded(document.getElementById('nomePDF').value);">
 </body>
 </html>
