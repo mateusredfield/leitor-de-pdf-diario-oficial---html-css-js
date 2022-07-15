@@ -9,17 +9,81 @@
   integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
   crossorigin="anonymous"></script>
 <script>
+<script src="js/pdf.js"></script>
+//parei aqui falta adiocionar o pdf.js
+
+var PDF_URL = '/path/to/example.pdf';
+// Specify the path to the worker
+PDFJS.workerSrc = '/path/to/pdf.worker.js';
+
+function Pdf2TextClass(){
+     var self = this;
+     this.complete = 0;
+
+    /**
+     *
+     * @param data ArrayBuffer of the pdf file content
+     * @param callbackPageDone To inform the progress each time
+     *        when a page is finished. The callback function's input parameters are:
+     *        1) number of pages done;
+     *        2) total number of pages in file.
+     * @param callbackAllDone The input parameter of callback function is 
+     *        the result of extracted text from pdf file.
+     *
+     */
+     this.callbackPageDone = function(paginasCompltas, total){console.log("Pagina convertida: " + paginasCompltas)}
+     this.callbackAllDone = function(textoCompleto){console.log("\r\n Paginas completamente completas :" + textoCompleto)}
+     this.pdfToText = function(data, callbackPageDone, callbackAllDone){
+        console.assert( data  instanceof ArrayBuffer  || typeof data == 'string' );
+        PDFJS.getDocument( data ).then( function(pdf) {
+        var div = document.getElementById('viewer');
+
+        var total = pdf.numPages;
+        callbackPageDone( 0, total );        
+        var layers = {};        
+        for (i = 1; i <= total; i++){
+            pdf.getPage(i).then( function(page){
+            var n = page.pageNumber;
+            page.getTextContent().then( function(textContent){
+            if( null != textContent.items ){
+                var page_text = "";
+                var last_block = null;
+                for( var k = 0; k < textContent.items.length; k++ ){
+                    var block = textContent.items[k];
+                    if( last_block != null && last_block.str[last_block.str.length-1] != ' '){
+                        if( block.x < last_block.x )
+                            page_text += "\r\n"; 
+                        else if ( last_block.y != block.y && ( last_block.str.match(/^(\s?[a-zA-Z])$|^(.+\s[a-zA-Z])$/) == null ))
+                            page_text += ' ';
+                    }
+                    page_text += block.str;
+                    last_block = block;
+                }
+
+                textContent != null && console.log("page " + n + " finished."); //" content: \n" + page_text);
+                layers[n] =  page_text + "\n\n";
+            }
+            ++ self.complete;
+            callbackPageDone( self.complete, total );
+            if (self.complete == total){
+                window.setTimeout(function(){
+                var full_text = "";
+                var num_pages = Object.keys(layers).length;
+                for( var j = 1; j <= num_pages; j++)
+                    full_text += layers[j] ;
+                callbackAllDone(full_text);
+                }, 1000);              
+            }
+            }); // end  of page.getTextContent().then
+        }); // end of page.then
+        } // of for
+    });
+    }; // end of pdfToText()
+}; // end of class
+
 $(window).on('load', function() {
     console.log("onload");
-   //$(".img-parallax").each(function(){console.log("onload do parallax");})
-//     $(document).on({
-//       scroll: function () {
-//         parallaxImg();
-//       }, ready: function () {
-//         parallaxImg();
-//       }
-//     });
-//   });
+
 })
 
 </script>
@@ -41,72 +105,6 @@ html, body {
   color: white;
 }
 
-.container-body{
-  height: 100%;
-  width: 100%;
-  background: rgb(139, 85, 54);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-content: center;
-  align-items: center;
-  flex-wrap: nowrap;
-  overflow: auto;
-  padding-top: 5%;
-}
-
-/*parei aqui na diferenca entre os aligns, estava no video*/
-.container{
-    background-color: rgb(46, 56, 55);
-    padding: 0%;
-    color: black;
-    display: flex;
-    height: 90%;
-    /* max-height: 50%; */
-    width: 60%;
-    /* max-width: 50%; */
-    justify-content: center;
-    align-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    flex-shrink: 0;
-    margin-bottom: 10%;
-    /* margin-top: 2.5%; */
-    
-}
-
-.item{
-    display: flex;
-    flex: 0 1 20%;
-    height: 10%;
-    justify-content: center;
-    align-content: center;
-    align-items: center;
-    padding: auto;
-}
-
-.fundoAzul{
-    background-color: lavender;
-}
-
-.fundoRosa{
-    background-color: peachpuff;
-}
-
-.fundoVermelho{
-    background-color: brown;
-}
-
-.fundoClaro{
-    background-color: mintcream;
-}
-
-/* Responsive layout - when the screen is less than 700px wide, make the two columns stack on top of each other instead of next to each other */
-/* @media (max-width: 700px) {
-  .row, .navbar {   
-    flex-direction: column;
-  }
-} */
 </style>
 </head>
 <body>
@@ -114,43 +112,6 @@ html, body {
 <div class="container-body">
     <div class="container">
         <div class="item fundoAzul">Item 1</div>
-        <div class="item fundoRosa">Item 2</div>
-        <div class="item fundoVermelho">Item 3</div>
-        <div class="item fundoClaro">Item 4</div>
-        <div class="item fundoAzul">Item 5</div>
-        <div class="item fundoRosa">Item 6</div>
-        <div class="item fundoVermelho">Item 7</div>
-        <div class="item fundoClaro">Item 8</div>
-    </div>
-    <div class="container">
-        <div class="item fundoAzul">Item 1</div>
-        <div class="item fundoRosa">Item 2</div>
-        <div class="item fundoVermelho">Item 3</div>
-        <div class="item fundoClaro">Item 4</div>
-        <div class="item fundoAzul">Item 5</div>
-        <div class="item fundoRosa">Item 6</div>
-        <div class="item fundoVermelho">Item 7</div>
-        <div class="item fundoClaro">Item 8</div>
-    </div>
-    <div class="container">
-        <div class="item fundoAzul">Item 1</div>
-        <div class="item fundoRosa">Item 2</div>
-        <div class="item fundoVermelho">Item 3</div>
-        <div class="item fundoClaro">Item 4</div>
-        <div class="item fundoAzul">Item 5</div>
-        <div class="item fundoRosa">Item 6</div>
-        <div class="item fundoVermelho">Item 7</div>
-        <div class="item fundoClaro">Item 8</div>
-    </div>
-    <div class="container">
-        <div class="item fundoAzul">Item 1</div>
-        <div class="item fundoRosa">Item 2</div>
-        <div class="item fundoVermelho">Item 3</div>
-        <div class="item fundoClaro">Item 4</div>
-        <div class="item fundoAzul">Item 5</div>
-        <div class="item fundoRosa">Item 6</div>
-        <div class="item fundoVermelho">Item 7</div>
-        <div class="item fundoClaro">Item 8</div>
     </div>
 </div>    
 
