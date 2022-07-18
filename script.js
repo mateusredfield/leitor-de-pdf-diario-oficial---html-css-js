@@ -23,7 +23,32 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
 
 async function pageLoaded(PDF_PATH) {
   // Loading document and page text content
-  const loadingTask = pdfjsLib.getDocument({ url: PDF_PATH });
+  var loadingTask;
+  var erro = 0;
+  var encerraCodigo = 0;
+//   fetch(PDF_PATH)
+//   .then(response => loadingTask = pdfjsLib.getDocument({ url: PDF_PATH }))
+//   .catch(err => erro = 1)
+//   if(erro == 1) return null;
+  
+  await fetch(PDF_PATH)
+  .then( (response) => {
+    if(!response.ok){
+      console.log("nao encontrou o arquivo")
+      encerraCodigo = 1;
+    }
+    else{
+      
+      console.log("encontrou o arquivo e deveria sr antes do print seguinte");
+
+    }
+  })
+  .catch( (error) => {console.log("erro desconhecido - provavel que o servidor nao tenha respondido")})
+
+  //console.log("print seguinte ao do fetch");
+  if (encerraCodigo) return "Arquivo nao encontrado 404";
+
+  loadingTask = await pdfjsLib.getDocument({ url: PDF_PATH })
   const pdfDocument = await loadingTask.promise;
   var page = await pdfDocument.getPage(1);
   var j = 1;
@@ -41,6 +66,16 @@ async function pageLoaded(PDF_PATH) {
   console.log(glTextoFull);
   page.cleanup();
   return glTextoFull;
+}
+
+function testeFetch(nomeArquivo){
+  fetch(nomeArquivo)
+  .then( (response) => {
+    console.log('nome: ' + nomeArquivo + response.ok);
+    if(!response.ok){console.log("nao encontrou o arquivo")}
+    else{console.log("encontrou o arquivo")}
+  })
+  .catch( (error) => {console.log("catch")})
 }
 
 document.addEventListener("DOMContentLoaded", function () {
